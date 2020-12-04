@@ -209,24 +209,41 @@ type MatchedEntries = [Entry, Entry];
 const findMatchingEntry = (testEntry: number, entries: Entry[]): Entry | null =>
   entries.find((entry) => testEntry + entry === desiredResult) ?? null;
 
-const [_, matchedEntries] = inputEntries.reduce<
-  [Entry[], MatchedEntries | null]
->(
-  ([prevEntries, prevMatched], entry) => {
-    const [_, ...entries] = prevEntries;
-    const matchedEntry = findMatchingEntry(entry, entries);
+// a bit of an ugly reducer function solution
+// const [_, matchedEntries] = inputEntries.reduce<
+//   [Entry[], MatchedEntries | null]
+// >(
+//   ([prevEntries, prevMatched], entry) => {
+//     const [_, ...entries] = prevEntries;
+//     const matchedEntry = findMatchingEntry(entry, entries);
 
-    return matchedEntry
-      ? [entries, [entry, matchedEntry]]
-      : [entries, prevMatched];
-  },
-  [inputEntries, null]
-);
+//     return matchedEntry
+//       ? [entries, [entry, matchedEntry]]
+//       : [entries, prevMatched];
+//   },
+//   [inputEntries, null]
+// );
 
-if (!matchedEntries) {
-  console.error("no entries matched");
-  process.exit(1);
-}
-const [entryOne, entryTwo] = matchedEntries;
+// if (!matchedEntries) {
+//   console.error("no entries matched");
+//   process.exit(1);
+// }
+// const [entryOne, entryTwo] = matchedEntries;
 
+// console.log(entryOne * entryTwo);
+
+// a slightly less ugly recusive solution
+const recursiveFindEntries = (
+  testEntry: Entry,
+  entries: Entry[]
+): MatchedEntries => {
+  const matchedEntry = findMatchingEntry(testEntry, entries);
+  if (matchedEntry) return [testEntry, matchedEntry];
+
+  const [newTestEntry, ...newEntries] = entries;
+  return recursiveFindEntries(newTestEntry, newEntries);
+};
+
+const [testEntry, ...entries] = inputEntries;
+const [entryOne, entryTwo] = recursiveFindEntries(testEntry, entries);
 console.log(entryOne * entryTwo);
