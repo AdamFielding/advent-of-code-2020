@@ -201,49 +201,73 @@ const inputEntries = [
   1760,
 ];
 
-const desiredResult = 2020;
-
 type Entry = number;
-type MatchedEntries = [Entry, Entry];
 
-const findMatchingEntry = (testEntry: number, entries: Entry[]): Entry | null =>
-  entries.find((entry) => testEntry + entry === desiredResult) ?? null;
+const multiplyEntries = (entries: Entry[]): Entry =>
+  entries.reduce((acc, entry) => acc * entry, 1);
 
-// a bit of an ugly reducer function solution
-// const [_, matchedEntries] = inputEntries.reduce<
-//   [Entry[], MatchedEntries | null]
-// >(
-//   ([prevEntries, prevMatched], entry) => {
-//     const [_, ...entries] = prevEntries;
-//     const matchedEntry = findMatchingEntry(entry, entries);
+const addEntires = (entries: Entry[]): Entry =>
+  entries.reduce((acc, entry) => acc + entry, 0);
 
-//     return matchedEntry
-//       ? [entries, [entry, matchedEntry]]
-//       : [entries, prevMatched];
-//   },
-//   [inputEntries, null]
-// );
+const go = (
+  entries: Entry[],
+  ogEntries: Entry[],
+  matchingEntries: Entry[],
+  desiredResult: number,
+  numberOfMatches: number
+): Entry[] => {
+  const [entry, ...newEntries] = entries;
+  const newMatchingEntries = [entry, ...matchingEntries];
+  const total = addEntires(newMatchingEntries);
 
-// if (!matchedEntries) {
-//   console.error("no entries matched");
-//   process.exit(1);
-// }
-// const [entryOne, entryTwo] = matchedEntries;
+  if (
+    total === desiredResult &&
+    newMatchingEntries.length === numberOfMatches
+  ) {
+    return newMatchingEntries;
+  }
 
-// console.log(entryOne * entryTwo);
+  if (entries.length <= 0) {
+    const [_, ...newOgEntries] = ogEntries;
+    return go(newOgEntries, newOgEntries, [], desiredResult, numberOfMatches);
+  }
 
-// a slightly less ugly recusive solution
-const recursiveFindEntries = (
-  testEntry: Entry,
-  entries: Entry[]
-): MatchedEntries => {
-  const matchedEntry = findMatchingEntry(testEntry, entries);
-  if (matchedEntry) return [testEntry, matchedEntry];
+  if (newMatchingEntries.length >= numberOfMatches) {
+    return go(
+      newEntries,
+      ogEntries,
+      matchingEntries,
+      desiredResult,
+      numberOfMatches
+    );
+  }
 
-  const [newTestEntry, ...newEntries] = entries;
-  return recursiveFindEntries(newTestEntry, newEntries);
+  if (total < desiredResult) {
+    return go(
+      newEntries,
+      ogEntries,
+      newMatchingEntries,
+      desiredResult,
+      numberOfMatches
+    );
+  }
+
+  return go(
+    newEntries,
+    ogEntries,
+    matchingEntries,
+    desiredResult,
+    numberOfMatches
+  );
 };
 
-const [testEntry, ...entries] = inputEntries;
-const [entryOne, entryTwo] = recursiveFindEntries(testEntry, entries);
-console.log(entryOne * entryTwo);
+const findMatchingEntries = (
+  entries: Entry[],
+  desiredResult: number,
+  numberOfMatches: number
+): Entry[] => {
+  return go(entries, entries, [], desiredResult, numberOfMatches);
+};
+
+const matchedEntries = findMatchingEntries(inputEntries, 2020, 3);
+console.log(multiplyEntries(matchedEntries));
